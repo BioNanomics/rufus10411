@@ -88,7 +88,8 @@ public final class SubsystemCommands {
         return Commands.defer(() -> {
             final double rpm = shooter.getDashboardTargetRPM();
             return Commands.parallel(
-                shooter.run(() -> shooter.setRPM(rpm)),
+                shooter.spinUpCommand(rpm)
+                    .andThen(shooter.run(() -> shooter.setRPM(rpm))),
                 Commands.waitUntil(shooter::isAboveFeedThreshold)
                     .andThen(feed())
             );
