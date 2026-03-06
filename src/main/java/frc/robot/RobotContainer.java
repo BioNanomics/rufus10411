@@ -92,6 +92,7 @@ public class RobotContainer {
         limelight.setDefaultCommand(updateVisionCommand());
 
         RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
+            .and(RobotModeTriggers.test().negate())
             .onTrue(intake.homingCommand())
             .onTrue(hanger.homingCommand());
 
