@@ -20,6 +20,8 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -201,6 +203,15 @@ public class Intake extends SubsystemBase {
         )
         .unless(() -> isHomed)
         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    }
+
+    @Override
+    public void periodic() {
+        Logger.recordOutput("Intake/PivotAngleDegrees", pivotMotor.getPosition().getValue().in(Degrees));
+        Logger.recordOutput("Intake/RollerRPM", rollerMotor.getVelocity().getValue().in(RPM));
+        Logger.recordOutput("Intake/PivotSupplyCurrent", pivotMotor.getSupplyCurrent().getValue().in(Amps));
+        Logger.recordOutput("Intake/RollerSupplyCurrent", rollerMotor.getSupplyCurrent().getValue().in(Amps));
+        Logger.recordOutput("Intake/IsHomed", isHomed);
     }
 
     @Override

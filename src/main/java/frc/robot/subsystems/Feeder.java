@@ -15,6 +15,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -86,6 +88,13 @@ public class Feeder extends SubsystemBase {
 
     public Command feedCommand() {
         return startEnd(() -> set(Speed.FEED), () -> setPercentOutput(0));
+    }
+
+    @Override
+    public void periodic() {
+        Logger.recordOutput("Feeder/RPM", motor.getVelocity().getValue().in(RPM));
+        Logger.recordOutput("Feeder/StatorCurrent", motor.getStatorCurrent().getValue().in(Amps));
+        Logger.recordOutput("Feeder/SupplyCurrent", motor.getSupplyCurrent().getValue().in(Amps));
     }
 
     @Override

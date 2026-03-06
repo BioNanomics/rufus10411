@@ -6,8 +6,11 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.DriverStation;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
     private final RobotContainer m_robotContainer;
     
     /**
@@ -31,9 +34,11 @@ public class Robot extends TimedRobot {
         m_robotContainer = new RobotContainer();
         SmartDashboard.putData(CommandScheduler.getInstance());
         RobotController.setBrownoutVoltage(Volts.of(6.1));
-        // Log all NetworkTables (SmartDashboard/Shuffleboard) + DS joystick data
-        DataLogManager.start();
-        DriverStation.startDataLog(DataLogManager.getLog());
+        // AdvantageKit logging: write to USB stick + publish to NetworkTables
+        Logger.recordMetadata("ProjectName", "rufus10411");
+        Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/logs")); // Retrieve via SFTP: sftp lvuser@10.104.11.2:/home/lvuser/logs
+        Logger.addDataReceiver(new NT4Publisher());  // Live data in AdvantageScope
+        Logger.start();
     }
     
     /**

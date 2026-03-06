@@ -12,6 +12,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -73,6 +75,13 @@ public class Floor extends SubsystemBase {
 
     public Command reverseCommand() {
         return startEnd(() -> set(Speed.REVERSE), () -> set(Speed.STOP));
+    }
+
+    @Override
+    public void periodic() {
+        Logger.recordOutput("Floor/RPM", motor.getVelocity().getValue().in(RPM));
+        Logger.recordOutput("Floor/StatorCurrent", motor.getStatorCurrent().getValue().in(Amps));
+        Logger.recordOutput("Floor/SupplyCurrent", motor.getSupplyCurrent().getValue().in(Amps));
     }
 
     @Override

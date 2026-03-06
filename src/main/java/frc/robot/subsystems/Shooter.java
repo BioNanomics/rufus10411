@@ -18,6 +18,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -149,6 +151,22 @@ public class Shooter extends SubsystemBase {
         builder.addDoubleProperty(name + " Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty(name + " Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty(name + " Supply Voltage", () -> motor.getSupplyVoltage().getValue().in(Volts), null);
+    }
+
+    @Override
+    public void periodic() {
+        Logger.recordOutput("Shooter/Left/RPM", leftMotor.getVelocity().getValue().in(RPM));
+        Logger.recordOutput("Shooter/Middle/RPM", middleMotor.getVelocity().getValue().in(RPM));
+        Logger.recordOutput("Shooter/Right/RPM", rightMotor.getVelocity().getValue().in(RPM));
+        Logger.recordOutput("Shooter/Left/SupplyVoltage", leftMotor.getSupplyVoltage().getValue().in(Volts));
+        Logger.recordOutput("Shooter/Middle/SupplyVoltage", middleMotor.getSupplyVoltage().getValue().in(Volts));
+        Logger.recordOutput("Shooter/Right/SupplyVoltage", rightMotor.getSupplyVoltage().getValue().in(Volts));
+        Logger.recordOutput("Shooter/Left/StatorCurrent", leftMotor.getStatorCurrent().getValue().in(Amps));
+        Logger.recordOutput("Shooter/Middle/StatorCurrent", middleMotor.getStatorCurrent().getValue().in(Amps));
+        Logger.recordOutput("Shooter/Right/StatorCurrent", rightMotor.getStatorCurrent().getValue().in(Amps));
+        Logger.recordOutput("Shooter/TargetRPM", velocityRequest.getVelocityMeasure().in(RPM));
+        Logger.recordOutput("Shooter/ReadyToShoot", isVelocityWithinTolerance());
+        Logger.recordOutput("Shooter/AboveFeedThreshold", isAboveFeedThreshold());
     }
 
     @Override

@@ -21,6 +21,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Measure;
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Per;
@@ -140,6 +142,13 @@ public class Hanger extends SubsystemBase {
     private Distance motorAngleToExtension(Angle motorAngle) {
         final Measure<DistanceUnit> extensionMeasure = motorAngle.timesRatio(kHangerExtensionPerMotorAngle);
         return Inches.of(extensionMeasure.in(Inches)); // Promote from Measure<DistanceUnit> to Distance
+    }
+
+    @Override
+    public void periodic() {
+        Logger.recordOutput("Hanger/ExtensionInches", motorAngleToExtension(motor.getPosition().getValue()).in(Inches));
+        Logger.recordOutput("Hanger/SupplyCurrent", motor.getSupplyCurrent().getValue().in(Amps));
+        Logger.recordOutput("Hanger/IsHomed", isHomed);
     }
 
     @Override
