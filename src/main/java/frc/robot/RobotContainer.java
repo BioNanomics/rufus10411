@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -47,7 +48,9 @@ public class RobotContainer {
 
     private final SwerveTelemetry swerveTelemetry = new SwerveTelemetry(Driving.kMaxSpeed.in(MetersPerSecond));
     
-    private final CommandXboxController driver = new CommandXboxController(0);
+    private final boolean useJoystick = false;
+    private CommandXboxController driver = null; //new CommandXboxController(0);
+    private CommandJoystick joystick = null;
 
     private final AutoRoutines autoRoutines = new AutoRoutines(
         swerve,
@@ -73,11 +76,66 @@ public class RobotContainer {
     
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
-        configureBindings();
+        limelight.setDefaultCommand(updateVisionCommand());
+        shooter.setDefaultCommand(shooter.run(shooter::stop));
+
+        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
+            .and(RobotModeTriggers.test().negate())
+            .onTrue(intake.homingCommand())
+            .onTrue(hanger.homingCommand());
+        
+        if (useJoystick) {
+            joystick = new CommandJoystick(0);
+            configureBindings_Joystick();
+        } else {
+            driver = new CommandXboxController(0);
+            configureBindings_Gamepad();
+        }
+
         autoRoutines.configure();
         swerve.registerTelemetry(swerveTelemetry::telemeterize);
     }
-    
+
+    private void configureBindings_Joystick() {
+        configureManualDriveBindings_Joystick();
+
+        // Right Trigger: Aim at hub using limelight + drive, then spin up shooter and feed when ready
+        joystick.button(17).whileTrue(subsystemCommands.aimAndShoot());
+        // Right Bumper: Spin up shooter to dashboard-configured RPM, then feed
+        joystick.button(18).whileTrue(subsystemCommands.shootManually());
+        // Left Trigger: Deploy intake and run rollers to pick up a note
+        joystick.button(16).whileTrue(intake.intakeCommand());
+        // Left Bumper: Stow the intake pivot
+        joystick.button(5).onTrue(intake.runOnce(() -> intake.set(Intake.Position.STOWED)));
+
+        // D-Pad Up: Move hanger to pre-hang (raised) position
+        joystick.povUp().onTrue(hanger.positionCommand(Hanger.Position.HANGING));
+        // D-Pad Down: Pull hanger down to hung (climbed) position
+        joystick.povDown().onTrue(hanger.positionCommand(Hanger.Position.HUNG));
+        // D-Pad Left: Reverse floor and shooter to clear a jam
+        joystick.povLeft().whileTrue(Commands.parallel(floor.reverseCommand(), shooter.reverseCommand()));
+    }
+
+    private void configureManualDriveBindings_Joystick() {
+        final ManualDriveCommand manualDriveCommand = new ManualDriveCommand(
+            swerve, 
+            () -> -joystick.getRawAxis(0), 
+            () -> -joystick.getRawAxis(1), 
+            () -> -joystick.getRawAxis(3)
+        );
+        swerve.setDefaultCommand(manualDriveCommand);
+        // A: Lock heading toward opponent alliance wall (180°)
+        joystick.button(1).onTrue(Commands.runOnce(() -> manualDriveCommand.setLockedHeading(Rotation2d.k180deg)));
+        // B: Lock heading to the right (90° clockwise)
+        joystick.button(2).onTrue(Commands.runOnce(() -> manualDriveCommand.setLockedHeading(Rotation2d.kCW_90deg)));
+        // X: Lock heading to the left (90° counter-clockwise)
+        joystick.button(3).onTrue(Commands.runOnce(() -> manualDriveCommand.setLockedHeading(Rotation2d.kCCW_90deg)));
+        // Y: Lock heading toward own alliance wall (0°)
+        joystick.button(4).onTrue(Commands.runOnce(() -> manualDriveCommand.setLockedHeading(Rotation2d.kZero)));
+        // Back (Select): Re-zero field-centric heading to current robot orientation
+        joystick.button(8).onTrue(Commands.runOnce(() -> manualDriveCommand.seedFieldCentric()));
+    }
+
     /**
      * Use this method to define your trigger->command mappings. Triggers can be created via the
      * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
@@ -87,16 +145,9 @@ public class RobotContainer {
      * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
      * joysticks}.
      */
-    private void configureBindings() {
-        configureManualDriveBindings();
-        limelight.setDefaultCommand(updateVisionCommand());
-        shooter.setDefaultCommand(shooter.run(shooter::stop));
-
-        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
-            .and(RobotModeTriggers.test().negate())
-            .onTrue(intake.homingCommand())
-            .onTrue(hanger.homingCommand());
-
+    private void configureBindings_Gamepad() {
+        configureManualDriveBindings_Gamepad();
+        
         // Right Trigger: Aim at hub using limelight + drive, then spin up shooter and feed when ready
         driver.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
         // Right Bumper: Spin up shooter to dashboard-configured RPM, then feed
@@ -114,7 +165,7 @@ public class RobotContainer {
         driver.povLeft().whileTrue(Commands.parallel(floor.reverseCommand(), shooter.reverseCommand()));
     }
 
-    private void configureManualDriveBindings() {
+    private void configureManualDriveBindings_Gamepad() {
         final ManualDriveCommand manualDriveCommand = new ManualDriveCommand(
             swerve, 
             () -> -driver.getLeftY(), 
