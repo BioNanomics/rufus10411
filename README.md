@@ -1,3 +1,10 @@
+# Overview
+
+Wayne HS 10411 Rufus 
+
+[Google Doc Notes](https://docs.google.com/document/d/1e-II6_diUCd73_c5pIJWgDAT_IvrZXD0227dueINiO4/edit) <-- Log what you do here
+
+
 # 2026CompetitiveConcept
 
 This repository contains the code used for the WestCoast Products 2026 [Competitive Concept](https://wcproducts.com/pages/wcp-competitive-concepts).
