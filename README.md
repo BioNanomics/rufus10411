@@ -102,3 +102,59 @@ At the start of every match (robot placed on the field):
 - The target shooter RPM for manual shots (Right Bumper) is set via **Shuffleboard** — look for the `Target RPM` slider under the Shooter subsystem widget.
 - Default is **5000 RPM**. Adjust based on shot distance for the event venue.
 - Feed threshold is fixed at **3500 RPM** — the floor and feeder will not run until the shooter crosses this.
+
+---
+
+## Power-Up Initialization
+
+When the robot is powered on and robot code starts, several automatic initialization steps occur before the robot is ready to operate. Understanding this sequence helps diagnose issues and know what to expect when enabling the robot.
+
+> **If you change any of this behavior in code, update this section.**
+> Links back here are in the relevant source files:
+> - `RobotContainer.java` — `configureBindings()` (homing trigger)
+> - `Intake.java` — `homingCommand()`
+> - `Hanger.java` — `homingCommand()`
+
+### 1. On Code Start (Robot Constructor)
+
+These happen immediately when the robot code launches, before any mode is active:
+
+| What | Detail |
+|---|---|
+| AdvantageKit logging | Starts writing `.wpilog` to `/home/lvuser/logs/` and publishing live via NT4 |
+| Brownout protection | RoboRIO brownout threshold set to **6.1 V** |
+| Subsystems initialized | All subsystems (Swerve, Intake, Floor, Feeder, Shooter, Hood, Hanger, Limelight) are instantiated and their motors configured |
+| Vision update begins | Limelight default command starts running immediately, even while disabled (`ignoringDisable = true`) |
+| Shooter default command | Shooter default is `stop()` — motors hold at zero until commanded |
+
+### 2. On First Enable (Teleop or Autonomous — not Test Mode)
+
+When the robot transitions into **teleop or autonomous** for the first time after power-up, two homing sequences run automatically and in parallel. They are suppressed in **test mode**.
+
+#### Intake Pivot Homing
+
+The intake pivot motor has no absolute encoder, so its zero position must be found by driving it to a physical hard stop.
+
+1. Pivot motor drives **outward at 10% output** (toward the hard stop).
+2. Code waits until **supply current exceeds 6 A** — this indicates the pivot has stalled against the hard stop.
+3. Encoder is **zeroed** at the hard stop position (`HOMED` = 110°).
+4. Pivot immediately moves to **`STOWED` position (100°)**.
+
+> This command uses `kCancelIncoming` — it cannot be interrupted once started. A subsequent position command will be queued until homing finishes.
+
+#### Hanger Homing
+
+The hanger motor also uses a hard-stop current-sensing approach.
+
+1. Hanger motor drives **inward (retract) at −5% output**.
+2. Code waits until **supply current exceeds 0.4 A** — indicating the hanger has bottomed out.
+3. Encoder is **zeroed** at the retracted position (`HOMED` = 0 inches extension).
+4. Hanger immediately extends to the **`EXTEND_HOPPER` position (2 inches)** — clear of the robot chassis.
+
+> This command uses `kCancelSelf` — any position command issued during homing will cancel the homing sequence.
+
+### 3. Field-Centric Drive Zero
+
+The swerve drive uses field-centric control relative to a stored heading. This heading is **not automatically reset on power-up** — it must be manually re-zeroed by the driver before each match using the **Back button** on the Xbox controller (see [Re-Zero Field-Centric Orientation](#3-re-zero-field-centric-orientation-before-each-match)).
+
+> `seedFieldCentric()` is suppressed in test mode to avoid affecting other test sequences.

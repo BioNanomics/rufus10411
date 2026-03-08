@@ -115,6 +115,12 @@ public class Hanger extends SubsystemBase {
             .andThen(Commands.waitUntil(this::isExtensionWithinTolerance));
     }
 
+    /**
+     * Homes the hanger by retracting until a current spike (>0.4 A) indicates the hard stop,
+     * then zeros the encoder and extends to the hopper position. Skipped if already homed.
+     * Uses kCancelSelf — any position command issued during homing will cancel it.
+     * See README.md ## Power-Up Initialization for the full sequence description.
+     */
     public Command homingCommand() {
         return Commands.sequence(
             runOnce(() -> setPercentOutput(-0.05)),

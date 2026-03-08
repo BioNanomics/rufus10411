@@ -92,6 +92,9 @@ public class RobotContainer {
         limelight.setDefaultCommand(updateVisionCommand());
         shooter.setDefaultCommand(shooter.run(shooter::stop));
 
+        // Power-up homing: on first teleop/auto enable (suppressed in test mode), intake pivot and
+        // hanger both run their homing sequences automatically and in parallel.
+        // See README.md ## Power-Up Initialization for the full sequence description.
         RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
             .and(RobotModeTriggers.test().negate())
             .onTrue(intake.homingCommand())

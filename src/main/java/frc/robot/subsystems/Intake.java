@@ -191,6 +191,12 @@ public class Intake extends SubsystemBase {
             });
     }
 
+    /**
+     * Homes the intake pivot by driving outward until a current spike (>6 A) indicates the hard stop,
+     * then zeros the encoder and stows the pivot. Skipped if already homed. Cannot be interrupted
+     * (kCancelIncoming) — incoming commands queue until homing finishes.
+     * See README.md ## Power-Up Initialization for the full sequence description.
+     */
     public Command homingCommand() {
         return Commands.sequence(
             runOnce(() -> setPivotPercentOutput(0.1)),
