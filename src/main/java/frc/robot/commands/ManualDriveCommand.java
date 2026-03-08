@@ -131,8 +131,8 @@ public class ManualDriveCommand extends Command {
             } else {
                 swerve.setControl(
                     robotCentricRequest
-                        .withVelocityX(Driving.kMaxSpeed.times(input.forward))
-                        .withVelocityY(Driving.kMaxSpeed.times(input.left))
+                        .withVelocityX(Driving.kLimitedSpeed.times(input.forward))
+                        .withVelocityY(Driving.kLimitedSpeed.times(input.left))
                         .withRotationalRate(Driving.kMaxRotationalRate.times(input.rotation))
                 );
             }
