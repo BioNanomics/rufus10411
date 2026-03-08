@@ -11,7 +11,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.Driving;
 import frc.robot.subsystems.Swerve;
@@ -25,8 +27,13 @@ import frc.util.Stopwatch;
  * Handles field-centric driving with manual rotation input and
  * heading-hold behavior after a short delay once rotation input
  * returns to zero.
+ *
+ * Drive mode (field-centric vs robot-centric) is toggled live from Elastic
+ * via the "Field Centric" SmartDashboard boolean entry.
  */
 public class ManualDriveCommand extends Command {
+    private static final String kFieldCentricKey = "Field Centric";
+
     private enum State {
         IDLING,
         DRIVING_WITH_MANUAL_ROTATION,
@@ -37,6 +44,7 @@ public class ManualDriveCommand extends Command {
 
     private final Swerve swerve;
     private final DriveInputSmoother inputSmoother;
+    private final NetworkTableEntry fieldCentricEntry;
     private final SwerveRequest.Idle idleRequest = new SwerveRequest.Idle();
 
     private final SwerveRequest.FieldCentric fieldCentricRequest = new SwerveRequest.FieldCentric()
@@ -52,6 +60,10 @@ public class ManualDriveCommand extends Command {
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
         .withHeadingPID(5, 0, 0);
 
+    private final SwerveRequest.RobotCentric robotCentricRequest = new SwerveRequest.RobotCentric()
+        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo);
+
     private State currentState = State.IDLING;
     private Optional<Rotation2d> lockedHeading = Optional.empty();
     private Stopwatch headingLockStopwatch = new Stopwatch();
@@ -65,6 +77,9 @@ public class ManualDriveCommand extends Command {
     ) {
         this.swerve = swerve;
         this.inputSmoother = new DriveInputSmoother(forwardInput, leftInput, rotationInput);
+        // Publish the toggle so Elastic can display it as a Boolean Box / Toggle Button widget.
+        SmartDashboard.putBoolean(kFieldCentricKey, true);
+        this.fieldCentricEntry = SmartDashboard.getEntry(kFieldCentricKey);
         addRequirements(swerve);
     }
 
@@ -107,6 +122,25 @@ public class ManualDriveCommand extends Command {
     @Override
     public void execute() {
         final ManualDriveInput input = inputSmoother.getSmoothedInput();
+        final boolean isFieldCentric = fieldCentricEntry.getBoolean(true);
+
+        // Robot-centric mode: bypass heading-lock state machine entirely.
+        if (!isFieldCentric) {
+            if (!input.hasTranslation() && !input.hasRotation()) {
+                swerve.setControl(idleRequest);
+            } else {
+                swerve.setControl(
+                    robotCentricRequest
+                        .withVelocityX(Driving.kMaxSpeed.times(input.forward))
+                        .withVelocityY(Driving.kMaxSpeed.times(input.left))
+                        .withRotationalRate(Driving.kMaxRotationalRate.times(input.rotation))
+                );
+            }
+            previousInput = input;
+            return;
+        }
+
+        // Field-centric mode: existing heading-lock state machine.
         if (input.hasRotation()) {
             currentState = State.DRIVING_WITH_MANUAL_ROTATION;
         } else if (input.hasTranslation()) {

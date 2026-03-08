@@ -16,13 +16,15 @@ The project is based on one of CTRE's [Phoenix 6 example projects](https://githu
 ### Driving
 | Input | Action |
 |---|---|
-| Left Stick | Translate (field-centric) |
+| Left Stick | Translate |
 | Right Stick X | Rotate |
 | A | Lock heading toward opponent alliance wall (180°) |
 | B | Lock heading right (90° clockwise) |
 | X | Lock heading left (90° counter-clockwise) |
 | Y | Lock heading toward own alliance wall (0°) |
 | Back | Re-zero field-centric orientation to current robot heading |
+
+> **Field Centric toggle:** A **"Field Centric"** boolean in Elastic (SmartDashboard key `Field Centric`) switches drive mode. Default is **on** (field-centric). When turned off, the robot drives relative to its own front — useful for precise close-range maneuvers. Heading-lock (A/B/X/Y) is only active in field-centric mode.
 
 ### Shooting
 | Input | Action |
