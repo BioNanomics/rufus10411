@@ -2,6 +2,7 @@ package frc.robot.generated;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
@@ -77,8 +78,15 @@ public class TunerConstants {
     private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration()
         .withCurrentLimits(
             new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(Amps.of(40))
-                .withStatorCurrentLimitEnable(true)
+                // Stator current is intentionally not limited to preserve full torque.
+                // Supply current protects the 40A per-motor breaker.
+                // Allow a 40A spike for up to 3 seconds (within fuse thermal inertia),
+                // then throttle to 30A sustained so all 4 motors together (4×30=120A)
+                // stay within the main 120A fuse rating.
+                .withSupplyCurrentLimit(Amps.of(40))
+                .withSupplyCurrentLimitEnable(true)
+                .withSupplyCurrentLowerLimit(Amps.of(30))
+                .withSupplyCurrentLowerTime(Seconds.of(3))
         );
     private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
         .withCurrentLimits(
@@ -87,6 +95,10 @@ public class TunerConstants {
                 // stator current limit to help avoid brownouts without impacting performance.
                 .withStatorCurrentLimit(Amps.of(60))
                 .withStatorCurrentLimitEnable(true)
+                // Supply limit protects individual breakers and reduces main fuse (120A) load.
+                // Azimuth motors rarely need more than 20A supply to hold/track position.
+                .withSupplyCurrentLimit(Amps.of(20))
+                .withSupplyCurrentLimitEnable(true)
         );
     private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
     // Configs for the Pigeon 2; leave this null to skip applying Pigeon 2 configs
