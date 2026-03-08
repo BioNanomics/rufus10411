@@ -215,3 +215,90 @@ flowchart TD
     Pose --> Aim["AimAndDriveCommand\n(point at hub)"]
     Pose --> Auto["Choreo Auto\n(path following)"]
 ```
+
+---
+
+## Autonomous Routines
+
+The active auto routine is selected on **Shuffleboard** before the match using the **Auto Chooser** widget. The robot runs the selected routine automatically when autonomous mode starts.
+
+| Routine | Starting Position | Description |
+|---|---|---|
+| **Shoot Only** | Any | Aims at the hub and shoots preloaded balls (5 s timeout). No driving — safe fallback for any starting spot. |
+| **Shoot and Climb — Right** | Right (south) zone | Shoots preloaded balls, then drives to the tower and climbs. |
+| **Shoot and Climb — Center** | Center zone | Shoots preloaded balls, then drives to the tower and climbs. |
+| **Shoot and Climb — Left** | Left (north) zone | Shoots preloaded balls, then drives to the tower and climbs. |
+| **Outpost and Depot** | Right (south) zone | Drives to the outpost, collects from the depot, shoots, then climbs. |
+
+> **Picking the right routine:** Match the routine to where the robot is physically placed. Left/Center/Right are from **your driver's perspective** facing the field — this is the same whether you are Blue or Red alliance. Using the wrong position will cause the odometry reset to be off and the robot will miss the tower.
+
+### Red Alliance — Automatic Mirroring
+
+All trajectories are programmed in Blue alliance coordinates. When the FMS assigns the robot to Red alliance, **ChoreoLib automatically mirrors every trajectory** across the field centerline — no separate Red routines are needed and no code changes are required.
+
+Auto-aim also works correctly on Red: [`Landmarks.hubPosition()`](src/main/java/frc/robot/Landmarks.java) returns the Red alliance hub coordinates when on Red.
+
+**The driver picks the same routine name (Left / Center / Right) regardless of alliance color.**
+
+> **Important:** This mirroring depends on the FMS (or Driver Station in practice mode) correctly reporting the alliance color **before** autonomous starts. At events, verify the Driver Station shows the correct alliance color on the status bar before each match. In practice mode on a laptop, set the alliance manually in the Driver Station app under the **Setup** tab.
+
+### Shoot and Climb — Sequence Detail
+
+1. Odometry is reset to the robot's known starting pose.
+2. `aimAndShoot()` runs — shooter spins up, robot rotates to point shooter at hub, feeds when aimed and at speed. Times out after 5 seconds.
+3. Robot drives directly to the tower (~2.1 s, ~4 m diagonal).
+4. Hanger begins raising to pre-hang position (`HANGING`) while driving.
+5. On arrival at the tower, hanger pulls down to fully climbed position (`HUNG`).
+
+> The trajectory file for this path is [`ShootAndClimbTrajectory.traj`](src/main/deploy/choreo/ShootAndClimbTrajectory.traj). It was generated as a straight-line trapezoidal profile. **If there are field obstacles on the diagonal path, open it in Choreo, re-solve, and save — the robot code will automatically use the updated path on next deploy.**
+
+### Adding or Editing a Routine
+
+1. Edit the trajectory in Choreo (see [Choreo Setup](#choreo-setup-and-trajectory-editing) below).
+2. Export the `.traj` file to `src/main/deploy/choreo/`.
+3. Add a `ChoreoTraj` constant to [`ChoreoTraj.java`](src/main/java/frc/robot/generated/ChoreoTraj.java) matching the trajectory name and times.
+4. Add a new `private AutoRoutine yourRoutine()` method in [`AutoRoutines.java`](src/main/java/frc/robot/commands/AutoRoutines.java) following the existing pattern.
+5. Register it in `configure()` with `autoChooser.addRoutine("Your Name", this::yourRoutine)`.
+6. Build and deploy.
+
+---
+
+## Choreo Setup and Trajectory Editing
+
+[Choreo](https://choreo.autos/) is the path planning tool used to design and export robot trajectories. Install it on any laptop used for drive team or development work.
+
+### Installation
+
+**macOS:**
+Download the `.dmg` from the [Choreo GitHub releases page](https://github.com/SleipnirGroup/Choreo/releases). Open the `.dmg` and drag Choreo to your Applications folder.
+
+**Windows:**
+Download the `.exe` installer from [choreo.autos](https://choreo.autos/) and run it. No admin rights required.
+
+**Linux:**
+Download the `.AppImage` or `.deb` from the releases page on [choreo.autos](https://choreo.autos/).
+
+### Opening the Project
+
+1. Launch Choreo.
+2. Open the project file: `src/main/deploy/choreo/ChoreoProject.chor`.
+3. All trajectories in the project will appear in the left sidebar.
+
+### Editing a Trajectory
+
+1. Click a trajectory in the sidebar to open it on the field map.
+2. Drag waypoints to adjust the path. Add waypoints with a double-click on the field.
+3. Add **constraints** (max velocity, stop points, keep-in-lane) via the constraints panel to shape how the robot moves through a segment.
+4. Click **Generate** (or press `Ctrl+Enter` / `Cmd+Enter`) to re-solve the optimized trajectory.
+5. Save the project — Choreo automatically writes the updated `.traj` file to the `choreo/` folder alongside the `.chor` file.
+6. The updated trajectory is picked up automatically on the next `./gradlew deploy`.
+
+> **Do not manually edit `.traj` files** — they are generated output. Edit waypoints in Choreo and regenerate.
+
+### Adding a New Trajectory
+
+1. Click **New Trajectory** in Choreo.
+2. Place your start and end waypoints on the field map.
+3. Generate the path.
+4. Save — Choreo writes a new `.traj` file to the `choreo/` folder.
+5. Follow the [Adding or Editing a Routine](#adding-or-editing-a-routine) steps above to wire it into Java.

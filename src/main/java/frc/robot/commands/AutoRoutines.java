@@ -8,6 +8,10 @@ import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$0;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$1;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$2;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$3;
+import static frc.robot.generated.ChoreoTraj.ShootAndClimbTrajectory_Left;
+import static frc.robot.generated.ChoreoTraj.ShootAndClimbTrajectory_Center;
+import static frc.robot.generated.ChoreoTraj.ShootAndClimbTrajectory_Right;
+import frc.robot.generated.ChoreoTraj;
 
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
@@ -67,6 +71,9 @@ public final class AutoRoutines {
 
     public void configure() {
         autoChooser.addRoutine("Shoot Only", this::shootOnlyRoutine);
+        autoChooser.addRoutine("Shoot and Climb — Right", this::shootAndClimbRight);
+        autoChooser.addRoutine("Shoot and Climb — Center", this::shootAndClimbCenter);
+        autoChooser.addRoutine("Shoot and Climb — Left", this::shootAndClimbLeft);
         autoChooser.addRoutine("Outpost and Depot", this::outpostAndDepotRoutine);
         SmartDashboard.putData("Auto Chooser", autoChooser);
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
@@ -77,6 +84,29 @@ public final class AutoRoutines {
         routine.active().onTrue(
             subsystemCommands.aimAndShoot().withTimeout(5)
         );
+        return routine;
+    }
+
+    private AutoRoutine shootAndClimbRight()  { return shootAndClimbFromPosition(ShootAndClimbTrajectory_Right,  "Shoot and Climb — Right"); }
+    private AutoRoutine shootAndClimbCenter() { return shootAndClimbFromPosition(ShootAndClimbTrajectory_Center, "Shoot and Climb — Center"); }
+    private AutoRoutine shootAndClimbLeft()   { return shootAndClimbFromPosition(ShootAndClimbTrajectory_Left,   "Shoot and Climb — Left"); }
+
+    /** Shared logic: shoot preloaded balls, then drive to tower and climb. */
+    private AutoRoutine shootAndClimbFromPosition(ChoreoTraj trajDef, String name) {
+        final AutoRoutine routine = autoFactory.newRoutine(name);
+        final AutoTrajectory startToTower = trajDef.asAutoTraj(routine);
+
+        routine.active().onTrue(
+            Commands.sequence(
+                startToTower.resetOdometry(),
+                subsystemCommands.aimAndShoot().withTimeout(5),
+                startToTower.cmd()
+            )
+        );
+
+        startToTower.active().onTrue(hanger.positionCommand(Hanger.Position.HANGING));
+        startToTower.done().onTrue(hanger.positionCommand(Hanger.Position.HUNG));
+
         return routine;
     }
 

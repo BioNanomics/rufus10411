@@ -1,4 +1,4 @@
-
+// spotless:off
 package frc.robot.generated;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -6,10 +6,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Map;
 import java.util.OptionalInt;
 
-// If these imports cause errors because you're not using ChoreoLib,
-// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
+// If the 2 imports above cause errors because you're not using ChoreoLib,
+// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
 
 /**
  * A class containing the name, start pose, end pose, and total time of every Choreo trajectory.
@@ -25,51 +25,80 @@ public record ChoreoTraj(
     Pose2d endPoseBlue
 ) {
     public static final ChoreoTraj OutpostAndDepotTrajectory = new ChoreoTraj(
-	    "OutpostAndDepotTrajectory",
-	    OptionalInt.empty(),
-	    11.3563,
-	    new Pose2d(3.598, 0.64, Rotation2d.fromRadians(3.142)),
-	    new Pose2d(0.941, 3.564, Rotation2d.fromRadians(3.142))
-	);
-	public static final ChoreoTraj OutpostAndDepotTrajectory$0 = new ChoreoTraj(
-	    "OutpostAndDepotTrajectory",
-	    OptionalInt.of(0),
-	    1.81742,
-	    new Pose2d(3.598, 0.64, Rotation2d.fromRadians(3.142)),
-	    new Pose2d(0.581, 0.669, Rotation2d.fromRadians(3.142))
-	);
-	public static final ChoreoTraj OutpostAndDepotTrajectory$1 = new ChoreoTraj(
-	    "OutpostAndDepotTrajectory",
-	    OptionalInt.of(1),
-	    3.40099,
-	    new Pose2d(0.581, 0.669, Rotation2d.fromRadians(3.142)),
-	    new Pose2d(0.668, 5.964, Rotation2d.fromRadians(3.142))
-	);
-	public static final ChoreoTraj OutpostAndDepotTrajectory$2 = new ChoreoTraj(
-	    "OutpostAndDepotTrajectory",
-	    OptionalInt.of(2),
-	    2.5827799999999996,
-	    new Pose2d(0.668, 5.964, Rotation2d.fromRadians(3.142)),
-	    new Pose2d(2.498, 4.035, Rotation2d.fromRadians(0))
-	);
-	public static final ChoreoTraj OutpostAndDepotTrajectory$3 = new ChoreoTraj(
-	    "OutpostAndDepotTrajectory",
-	    OptionalInt.of(3),
-	    3.555109999999999,
-	    new Pose2d(2.498, 4.035, Rotation2d.fromRadians(0)),
-	    new Pose2d(0.941, 3.564, Rotation2d.fromRadians(3.142))
-	);
+        "OutpostAndDepotTrajectory",
+        OptionalInt.empty(),
+        11.3563,
+        new Pose2d(3.59816, 0.63985, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(0.94136, 3.56436, Rotation2d.fromRadians(3.14159))
+    );
+    /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
+    public static final ChoreoTraj OutpostAndDepotTrajectory$0 = new ChoreoTraj(
+        "OutpostAndDepotTrajectory",
+        OptionalInt.of(0),
+        1.81742,
+        new Pose2d(3.59816, 0.63985, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(0.58146, 0.6689, Rotation2d.fromRadians(3.14159))
+    );
+    /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
+    public static final ChoreoTraj OutpostAndDepotTrajectory$1 = new ChoreoTraj(
+        "OutpostAndDepotTrajectory",
+        OptionalInt.of(1),
+        3.40099,
+        new Pose2d(0.58146, 0.6689, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(0.66833, 5.96377, Rotation2d.fromRadians(3.14159))
+    );
+    /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
+    public static final ChoreoTraj OutpostAndDepotTrajectory$2 = new ChoreoTraj(
+        "OutpostAndDepotTrajectory",
+        OptionalInt.of(2),
+        2.5827799999999996,
+        new Pose2d(0.66833, 5.96377, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(2.49839, 4.03528, Rotation2d.fromRadians(0))
+    );
+    /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
+    public static final ChoreoTraj OutpostAndDepotTrajectory$3 = new ChoreoTraj(
+        "OutpostAndDepotTrajectory",
+        OptionalInt.of(3),
+        3.555109999999999,
+        new Pose2d(2.49839, 4.03528, Rotation2d.fromRadians(0)),
+        new Pose2d(0.94136, 3.56436, Rotation2d.fromRadians(3.14159))
+    );
+
+    public static final ChoreoTraj ShootAndClimbTrajectory_Right = new ChoreoTraj(
+        "ShootAndClimbTrajectory_Right",
+        OptionalInt.empty(),
+        2.067,
+        new Pose2d(3.598, 0.640, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(0.941, 3.564, Rotation2d.fromRadians(3.14159))
+    );
+    public static final ChoreoTraj ShootAndClimbTrajectory_Center = new ChoreoTraj(
+        "ShootAndClimbTrajectory_Center",
+        OptionalInt.empty(),
+        1.649,
+        new Pose2d(3.598, 4.036, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(0.941, 3.564, Rotation2d.fromRadians(3.14159))
+    );
+    public static final ChoreoTraj ShootAndClimbTrajectory_Left = new ChoreoTraj(
+        "ShootAndClimbTrajectory_Left",
+        OptionalInt.empty(),
+        2.314,
+        new Pose2d(3.598, 7.432, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(0.941, 3.564, Rotation2d.fromRadians(3.14159))
+    );
 
     /**
      * A map between trajectory names and their corresponding data.
      * This allows for trajectory data to be looked up with strings during runtime.
      */
     public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
-    	Map.entry("OutpostAndDepotTrajectory", OutpostAndDepotTrajectory),
-		Map.entry("OutpostAndDepotTrajectory$0", OutpostAndDepotTrajectory$0),
-		Map.entry("OutpostAndDepotTrajectory$1", OutpostAndDepotTrajectory$1),
-		Map.entry("OutpostAndDepotTrajectory$2", OutpostAndDepotTrajectory$2),
-		Map.entry("OutpostAndDepotTrajectory$3", OutpostAndDepotTrajectory$3)
+        Map.entry("OutpostAndDepotTrajectory", OutpostAndDepotTrajectory),
+        Map.entry("OutpostAndDepotTrajectory$0", OutpostAndDepotTrajectory$0),
+        Map.entry("OutpostAndDepotTrajectory$1", OutpostAndDepotTrajectory$1),
+        Map.entry("OutpostAndDepotTrajectory$2", OutpostAndDepotTrajectory$2),
+        Map.entry("OutpostAndDepotTrajectory$3", OutpostAndDepotTrajectory$3),
+        Map.entry("ShootAndClimbTrajectory_Right", ShootAndClimbTrajectory_Right),
+        Map.entry("ShootAndClimbTrajectory_Center", ShootAndClimbTrajectory_Center),
+        Map.entry("ShootAndClimbTrajectory_Left", ShootAndClimbTrajectory_Left)
     );
 
     /**
@@ -96,3 +125,4 @@ public record ChoreoTraj(
         return routine.trajectory(this.name);
     }
 }
+// spotless:on
