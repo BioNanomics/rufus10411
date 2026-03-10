@@ -16,10 +16,14 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Driving;
+import frc.robot.Constants.ForceField;
 import frc.robot.commands.AutoRoutines;
 import frc.robot.commands.FuelChaseCommand;
 import frc.robot.commands.ManualDriveCommand;
 import frc.robot.commands.SubsystemCommands;
+import com.bionanomics.refinery.forcefield.ForceFieldConfig;
+import com.bionanomics.refinery.forcefield.ForceFieldEngine;
+import com.bionanomics.refinery.forcefield.ForceFieldMap;
 import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Floor;
 import frc.robot.subsystems.Hanger;
@@ -47,6 +51,13 @@ public class RobotContainer {
     private final Limelight limelight = new Limelight("limelight");
 
     private final SwerveTelemetry swerveTelemetry = new SwerveTelemetry(Driving.kMaxSpeed.in(MetersPerSecond));
+
+    // Force field system
+    private final ForceFieldEngine forceFieldEngine = new ForceFieldEngine(
+        ForceFieldMap.loadFromDeploy(ForceField.kDefaultPreset),
+        ForceField.kCornerOffsets
+    );
+    private final ForceFieldConfig forceFieldConfig = new ForceFieldConfig(forceFieldEngine, ForceField.kDefaultPreset);
     
     private final CommandXboxController driver = new CommandXboxController(0);
 
@@ -77,6 +88,11 @@ public class RobotContainer {
         configureBindings();
         autoRoutines.configure();
         swerve.registerTelemetry(swerveTelemetry::telemeterize);
+    }
+
+    /** Called from Robot.robotPeriodic() to update force field config (preset changes, live tuning). */
+    public void updateForceFieldConfig() {
+        forceFieldConfig.update();
     }
     
     /**
@@ -126,7 +142,9 @@ public class RobotContainer {
             swerve, 
             () -> -driver.getLeftY(), 
             () -> -driver.getLeftX(), 
-            () -> -driver.getRightX()
+            () -> -driver.getRightX(),
+            forceFieldEngine,
+            () -> false // toggle is handled via button binding below
         );
         swerve.setDefaultCommand(manualDriveCommand);
         // A: Lock heading toward opponent alliance wall (180°)
@@ -139,6 +157,8 @@ public class RobotContainer {
         driver.y().onTrue(Commands.runOnce(() -> manualDriveCommand.setLockedHeading(Rotation2d.kZero)));
         // Back (Select): Re-zero field-centric heading to current robot orientation
         driver.back().onTrue(Commands.runOnce(() -> manualDriveCommand.seedFieldCentric()));
+        // Right Stick Button: Toggle force field on/off
+        driver.rightStick().onTrue(Commands.runOnce(() -> manualDriveCommand.toggleForceField()));
     }
 
     private Command updateVisionCommand() {

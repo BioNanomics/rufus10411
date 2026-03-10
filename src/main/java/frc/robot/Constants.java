@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.TunerConstants;
@@ -37,5 +38,21 @@ public final class Constants {
         public static final int PIPELINE_APRILTAG = 0;
         /** Neural Detector pipeline for fuel game pieces. */
         public static final int PIPELINE_FUEL_DETECTOR = 1;
+    }
+
+    public static class ForceField {
+        /** Default preset name (loaded from deploy/forcefield/<name>.json). */
+        public static final String kDefaultPreset = "default";
+
+        /**
+         * Swerve module corner offsets from robot center in meters [FL, FR, BL, BR].
+         * Derived from TunerConstants module positions (10.875", 10.125").
+         */
+        public static final Translation2d[] kCornerOffsets = new Translation2d[] {
+            new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
+            new Translation2d(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY),
+            new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
+            new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY),
+        };
     }
 }

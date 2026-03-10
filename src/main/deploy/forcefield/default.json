@@ -1,0 +1,85 @@
+{
+  "name": "Default Field",
+  "maxForceVelocity": 2.0,
+  "maxForceTorque": 1.5,
+  "forceGain": 1.0,
+  "torqueGain": 0.5,
+  "charges": [
+    {
+      "type": "line",
+      "id": "wall_south",
+      "x1": 0.0,
+      "y1": 0.0,
+      "x2": 16.54,
+      "y2": 0.0,
+      "strength": -3.0,
+      "falloffDistance": 1.0
+    },
+    {
+      "type": "line",
+      "id": "wall_north",
+      "x1": 0.0,
+      "y1": 8.21,
+      "x2": 16.54,
+      "y2": 8.21,
+      "strength": -3.0,
+      "falloffDistance": 1.0
+    },
+    {
+      "type": "line",
+      "id": "wall_west",
+      "x1": 0.0,
+      "y1": 0.0,
+      "x2": 0.0,
+      "y2": 8.21,
+      "strength": -3.0,
+      "falloffDistance": 1.0
+    },
+    {
+      "type": "line",
+      "id": "wall_east",
+      "x1": 16.54,
+      "y1": 0.0,
+      "x2": 16.54,
+      "y2": 8.21,
+      "strength": -3.0,
+      "falloffDistance": 1.0
+    },
+    {
+      "type": "radial",
+      "id": "hub_blue",
+      "x": 4.63,
+      "y": 4.03,
+      "innerRadius": 0.3,
+      "outerRadius": 2.0,
+      "strength": -2.0
+    },
+    {
+      "type": "radial",
+      "id": "hub_red",
+      "x": 11.91,
+      "y": 4.03,
+      "innerRadius": 0.3,
+      "outerRadius": 2.0,
+      "strength": -2.0
+    },
+    {
+      "type": "point",
+      "id": "shoot_blue",
+      "x": 5.5,
+      "y": 4.03,
+      "strength": 2.0,
+      "falloff": "gaussian",
+      "sigma": 0.8
+    },
+    {
+      "type": "point",
+      "id": "shoot_red",
+      "x": 11.04,
+      "y": 4.03,
+      "strength": 2.0,
+      "falloff": "gaussian",
+      "sigma": 0.8
+    }
+  ]
+}

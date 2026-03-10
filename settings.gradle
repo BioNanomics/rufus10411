@@ -28,3 +28,6 @@ pluginManagement {
 
 Properties props = System.getProperties();
 props.setProperty("org.gradle.internal.native.headers.unresolved.dependencies.ignore", "true");
+
+// Include the refinery-forcefield library as a composite build
+includeBuild 'refinery-forcefield'

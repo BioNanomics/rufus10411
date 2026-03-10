@@ -58,5 +58,6 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().run();
         Logger.recordOutput("Robot/BatteryVoltage", RobotController.getBatteryVoltage());
         Logger.recordOutput("Robot/MatchTimeSec", DriverStation.getMatchTime());
+        m_robotContainer.updateForceFieldConfig();
     }
 }

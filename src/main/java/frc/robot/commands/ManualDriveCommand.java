@@ -1,8 +1,11 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -11,11 +14,16 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import org.littletonrobotics.junction.Logger;
 import frc.robot.Constants.Driving;
+import com.bionanomics.refinery.forcefield.ForceFieldEngine;
+import com.bionanomics.refinery.forcefield.ForceResult;
 import frc.robot.subsystems.Swerve;
 import frc.util.DriveInputSmoother;
 import frc.util.ManualDriveInput;
@@ -30,9 +38,14 @@ import frc.util.Stopwatch;
  *
  * Drive mode (field-centric vs robot-centric) is toggled live from Elastic
  * via the "Field Centric" SmartDashboard boolean entry.
+ *
+ * An optional force field overlay adds velocity offsets based on the robot's
+ * position relative to defined charges (walls, snap-to zones, etc.).
+ * The force field is toggled via a BooleanSupplier (controller button).
  */
 public class ManualDriveCommand extends Command {
     private static final String kFieldCentricKey = "Field Centric";
+    private static final String kForceFieldEnabledKey = "ForceField/Enabled";
 
     private enum State {
         IDLING,
@@ -44,8 +57,11 @@ public class ManualDriveCommand extends Command {
 
     private final Swerve swerve;
     private final DriveInputSmoother inputSmoother;
+    private final ForceFieldEngine forceFieldEngine;
+    private final BooleanSupplier forceFieldToggle;
     private final NetworkTableEntry fieldCentricEntry;
     private final SwerveRequest.Idle idleRequest = new SwerveRequest.Idle();
+    private boolean forceFieldEnabled = false;
 
     private final SwerveRequest.FieldCentric fieldCentricRequest = new SwerveRequest.FieldCentric()
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
@@ -73,12 +89,17 @@ public class ManualDriveCommand extends Command {
         Swerve swerve,
         DoubleSupplier forwardInput,
         DoubleSupplier leftInput,
-        DoubleSupplier rotationInput
+        DoubleSupplier rotationInput,
+        ForceFieldEngine forceFieldEngine,
+        BooleanSupplier forceFieldToggle
     ) {
         this.swerve = swerve;
         this.inputSmoother = new DriveInputSmoother(forwardInput, leftInput, rotationInput);
+        this.forceFieldEngine = forceFieldEngine;
+        this.forceFieldToggle = forceFieldToggle;
         // Publish the toggle so Elastic can display it as a Boolean Box / Toggle Button widget.
         SmartDashboard.putBoolean(kFieldCentricKey, true);
+        SmartDashboard.putBoolean(kForceFieldEnabledKey, false);
         this.fieldCentricEntry = SmartDashboard.getEntry(kFieldCentricKey);
         addRequirements(swerve);
     }
@@ -119,12 +140,46 @@ public class ManualDriveCommand extends Command {
         previousInput = new ManualDriveInput();
     }
 
+    /** Toggles the force field on/off (called from a controller button binding). */
+    public void toggleForceField() {
+        forceFieldEnabled = !forceFieldEnabled;
+        SmartDashboard.putBoolean(kForceFieldEnabledKey, forceFieldEnabled);
+    }
+
+    /** Computes force field velocity offsets if enabled, otherwise returns zero. */
+    private ForceResult computeForceField() {
+        if (!forceFieldEnabled) {
+            Logger.recordOutput("ForceField/Enabled", false);
+            return ForceResult.ZERO;
+        }
+        Logger.recordOutput("ForceField/Enabled", true);
+        ForceResult result = forceFieldEngine.compute(swerve.getState().Pose);
+        Logger.recordOutput("ForceField/NetForceX", result.velocityOffset().getX());
+        Logger.recordOutput("ForceField/NetForceY", result.velocityOffset().getY());
+        Logger.recordOutput("ForceField/NetTorque", result.angularVelocityOffset());
+        Logger.recordOutput("ForceField/CornerForceFL",
+            new double[] { result.cornerForces()[0].getX(), result.cornerForces()[0].getY() });
+        Logger.recordOutput("ForceField/CornerForceFR",
+            new double[] { result.cornerForces()[1].getX(), result.cornerForces()[1].getY() });
+        Logger.recordOutput("ForceField/CornerForceBL",
+            new double[] { result.cornerForces()[2].getX(), result.cornerForces()[2].getY() });
+        Logger.recordOutput("ForceField/CornerForceBR",
+            new double[] { result.cornerForces()[3].getX(), result.cornerForces()[3].getY() });
+        return result;
+    }
+
     @Override
     public void execute() {
         final ManualDriveInput input = inputSmoother.getSmoothedInput();
         final boolean isFieldCentric = fieldCentricEntry.getBoolean(true);
+        final ForceResult forceResult = computeForceField();
+
+        // Force field velocity offsets (field-frame, m/s)
+        final LinearVelocity ffVx = LinearVelocity.ofBaseUnits(forceResult.velocityOffset().getX(), MetersPerSecond);
+        final LinearVelocity ffVy = LinearVelocity.ofBaseUnits(forceResult.velocityOffset().getY(), MetersPerSecond);
 
         // Robot-centric mode: bypass heading-lock state machine entirely.
+        // Note: force field is disabled in robot-centric mode (forces are field-relative).
         if (!isFieldCentric) {
             if (!input.hasTranslation() && !input.hasRotation()) {
                 swerve.setControl(idleRequest);
@@ -141,12 +196,15 @@ public class ManualDriveCommand extends Command {
         }
 
         // Field-centric mode: existing heading-lock state machine.
+        // With force field, the robot should never truly idle — forces may be acting.
+        final boolean hasForce = forceFieldEnabled && forceResult.velocityOffset().getNorm() > 0.01;
+
         if (input.hasRotation()) {
             currentState = State.DRIVING_WITH_MANUAL_ROTATION;
-        } else if (input.hasTranslation()) {
+        } else if (input.hasTranslation() || hasForce) {
             currentState = lockedHeading.isPresent() ? State.DRIVING_WITH_LOCKED_HEADING : State.DRIVING_WITH_MANUAL_ROTATION;
         } else if (previousInput.hasRotation() || previousInput.hasTranslation()) {
-            currentState = State.IDLING;
+            currentState = hasForce ? State.DRIVING_WITH_MANUAL_ROTATION : State.IDLING;
         }
         previousInput = input;
 
@@ -158,16 +216,17 @@ public class ManualDriveCommand extends Command {
                 lockHeadingIfRotationStopped(input);
                 swerve.setControl(
                     fieldCentricRequest
-                        .withVelocityX(Driving.kMaxSpeed.times(input.forward))
-                        .withVelocityY(Driving.kMaxSpeed.times(input.left))
-                        .withRotationalRate(Driving.kMaxRotationalRate.times(input.rotation))
+                        .withVelocityX(Driving.kMaxSpeed.times(input.forward).plus(ffVx))
+                        .withVelocityY(Driving.kMaxSpeed.times(input.left).plus(ffVy))
+                        .withRotationalRate(Driving.kMaxRotationalRate.times(input.rotation)
+                            .plus(RadiansPerSecond.of(forceResult.angularVelocityOffset())))
                 );
                 break;
             case DRIVING_WITH_LOCKED_HEADING:
                 swerve.setControl(
                     fieldCentricFacingAngleRequest
-                        .withVelocityX(Driving.kMaxSpeed.times(input.forward))
-                        .withVelocityY(Driving.kMaxSpeed.times(input.left))
+                        .withVelocityX(Driving.kMaxSpeed.times(input.forward).plus(ffVx))
+                        .withVelocityY(Driving.kMaxSpeed.times(input.left).plus(ffVy))
                         .withTargetDirection(lockedHeading.get())
                 );
                 break;
