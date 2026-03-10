@@ -51,6 +51,41 @@ The project is based on one of CTRE's [Phoenix 6 example projects](https://githu
 | Input | Action |
 |---|---|
 | D-Pad Left | Reverse floor and shooter to clear a jam (hold) |
+| Right Stick Click | Toggle force field on/off |
+
+---
+
+## Force Field Library (git subtree)
+
+The `refinery-forcefield/` directory is a **git subtree** of the [BioNanomics/refinery-forcefield](https://github.com/BioNanomics/refinery-forcefield) library. It provides wall repulsion, snap-to zones, and a visual preset editor. The Gradle composite build (`includeBuild`) resolves the library at compile time — no JAR publishing or version management needed.
+
+See [refinery-forcefield/README.md](refinery-forcefield/README.md) for charge types, tuning, and the web editor.
+
+### Updating the library
+
+```bash
+./scripts/update-forcefield.sh
+```
+
+This runs `git subtree pull` to merge the latest upstream changes into this repo.
+
+### Pushing changes back upstream
+
+If you edit files inside `refinery-forcefield/` directly in this repo and want to push them back to the library:
+
+```bash
+git subtree push --prefix=refinery-forcefield forcefield main
+```
+
+### First-time setup (after a fresh clone)
+
+New clones need to add the `forcefield` remote:
+
+```bash
+git remote add forcefield https://github.com/BioNanomics/refinery-forcefield.git
+```
+
+The subtree files are already committed in the repo — no submodule init required.
 
 ---
 
