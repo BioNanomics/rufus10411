@@ -44,8 +44,8 @@ The project is based on one of CTRE's [Phoenix 6 example projects](https://githu
 ### Climbing
 | Input | Action |
 |---|---|
-| D-Pad Up | Raise hanger to pre-hang position |
-| D-Pad Down | Pull hanger down to fully climbed position |
+| D-Pad Up | Extend climber (hold); release to stop |
+| D-Pad Down | Retract climber (hold); release to stop |
 
 ### Troubleshooting
 | Input | Action |
@@ -86,6 +86,32 @@ git remote add forcefield https://github.com/BioNanomics/refinery-forcefield.git
 ```
 
 The subtree files are already committed in the repo — no submodule init required.
+
+---
+
+## Teleop Mode Setup
+
+Use this checklist to get the robot ready for driver-controlled (teleop) mode.
+
+### Every time you enable teleop
+
+1. **Connect** — Laptop/driver station on the robot network; Xbox controller in port 0.
+2. **Enable** — In the Driver Station app, select **Teleop** and enable the robot. On **first enable** after power-up, intake and hanger homing run automatically (retract to hard stop, zero encoders, then move to ready positions). Wait for homing to finish before driving.
+3. **Re-zero heading** — With the robot placed on the field (front pointed where you want “forward”), press **Back** on the Xbox controller so field-centric drive matches the robot’s actual orientation.
+4. **Drive** — Left stick = translate, Right stick X = rotate. Field-centric is on by default; toggle via Elastic (`Field Centric` key) if needed.
+
+### Before your first match at an event
+
+- **Upload AprilTag field map** to the Limelight (see [Field Setup](#field-setup--match-calibration) step 1).
+- **Re-zero with Back** after placing the robot in the starting position.
+
+### Optional / as needed
+
+- **Shooter RPM** — Adjust via Shuffleboard “Target RPM” (default 5000) for Right Bumper manual shots.
+- **Vision check** — In Shuffleboard or AdvantageScope, confirm `limelight/Estimated Robot Pose` (or AdvantageKit Limelight pose) is updating when tags are visible.
+- **Force field** — Right stick click toggles wall repulsion on/off.
+
+Driver control reference: [Driver Controls (Xbox Controller)](#driver-controls-xbox-controller--port-0) above.
 
 ---
 

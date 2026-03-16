@@ -120,6 +120,16 @@ public class Hanger extends SubsystemBase {
             .andThen(Commands.waitUntil(this::isExtensionWithinTolerance));
     }
 
+    /** Extend while held; stop when released. Use for manual D-Pad control. */
+    public Command extendCommand() {
+        return startEnd(() -> setPercentOutput(0.5), () -> setPercentOutput(0));
+    }
+
+    /** Retract while held; stop when released. Use for manual D-Pad control. */
+    public Command retractCommand() {
+        return startEnd(() -> setPercentOutput(-0.5), () -> setPercentOutput(0));
+    }
+
     /**
      * Homes the hanger by retracting until a current spike (>0.4 A) indicates the hard stop,
      * then zeros the encoder and extends to the hopper position. Skipped if already homed.
