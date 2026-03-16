@@ -93,6 +93,6 @@ curl -s -X POST http://localhost:8765/mcp \
 
 ## Architecture
 
-The MCP server is provided by the [`refinery-roborio-mcp`](refinery-roborio-mcp/) library, included as a Gradle composite build. It has zero external dependencies — all JSON handling is built in.
+The MCP server is provided by the [`refinery-roborio-mcp`](https://github.com/BioNanomics/refinery-roborio-mcp) library, included as a Gradle composite build. It has zero external dependencies — all JSON handling is built in.
 
-See [refinery-roborio-mcp/README.md](refinery-roborio-mcp/README.md) for library details, vendordep installation for other teams, and the full API reference.
+See the [refinery-roborio-mcp README](https://github.com/BioNanomics/refinery-roborio-mcp#readme) for library details, vendordep installation for other teams, and the full API reference.
