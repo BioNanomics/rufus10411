@@ -170,7 +170,10 @@ public class Intake extends SubsystemBase {
                 set(Position.INTAKE);
                 set(Speed.INTAKE);
             },
-            () -> set(Speed.STOP)
+            () -> {
+                set(Speed.STOP);
+                set(Position.STOWED);
+            }
         );
     }
 
