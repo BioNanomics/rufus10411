@@ -16,7 +16,6 @@ import java.util.OptionalInt;
  * src/main/deploy/choreo/, adjust waypoints, re-solve, save, then update the
  * duration/start/end values below to match.
  */
-@SuppressWarnings("unused")
 public final class ShootAndClimbTraj {
 
     private ShootAndClimbTraj() {}

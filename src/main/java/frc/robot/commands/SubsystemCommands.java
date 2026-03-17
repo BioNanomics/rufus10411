@@ -20,7 +20,6 @@ public final class SubsystemCommands {
     private final Feeder feeder;
     private final Shooter shooter;
     private final Hood hood;
-    private final Hanger hanger;
 
     private final DoubleSupplier forwardInput;
     private final DoubleSupplier leftInput;
@@ -42,7 +41,6 @@ public final class SubsystemCommands {
         this.feeder = feeder;
         this.shooter = shooter;
         this.hood = hood;
-        this.hanger = hanger;
 
         this.forwardInput = forwardInput;
         this.leftInput = leftInput;

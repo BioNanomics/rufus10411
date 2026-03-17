@@ -8,6 +8,7 @@ import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$0;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$1;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$2;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$3;
+import frc.robot.generated.BackUpAndShootTraj;
 import frc.robot.generated.ChoreoTraj;
 import frc.robot.generated.ShootAndClimbTraj;
 
@@ -28,10 +29,7 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Swerve;
 
 public final class AutoRoutines {
-    private final Swerve swerve;
     private final Intake intake;
-    private final Floor floor;
-    private final Feeder feeder;
     private final Shooter shooter;
     private final Hood hood;
     private final Hanger hanger;
@@ -52,10 +50,7 @@ public final class AutoRoutines {
         Hanger hanger,
         Limelight limelight
     ) {
-        this.swerve = swerve;
         this.intake = intake;
-        this.floor = floor;
-        this.feeder = feeder;
         this.shooter = shooter;
         this.hood = hood;
         this.hanger = hanger;
@@ -69,6 +64,8 @@ public final class AutoRoutines {
 
     public void configure() {
         autoChooser.addRoutine("Shoot Only", this::shootOnlyRoutine);
+        autoChooser.addRoutine("Back Up Left and Shoot", this::backUpLeftAndShoot);
+        autoChooser.addRoutine("Back Up Right and Shoot", this::backUpRightAndShoot);
         autoChooser.addRoutine("Shoot and Climb — Right", this::shootAndClimbRight);
         autoChooser.addRoutine("Shoot and Climb — Center", this::shootAndClimbCenter);
         autoChooser.addRoutine("Shoot and Climb — Left", this::shootAndClimbLeft);
@@ -81,6 +78,27 @@ public final class AutoRoutines {
         final AutoRoutine routine = autoFactory.newRoutine("Shoot Only");
         routine.active().onTrue(
             subsystemCommands.aimAndShoot().withTimeout(5)
+        );
+        return routine;
+    }
+
+    private AutoRoutine backUpLeftAndShoot()  { return backUpAndShootFromTrajectory(BackUpAndShootTraj.Left,  "Back Up Left and Shoot"); }
+    private AutoRoutine backUpRightAndShoot() { return backUpAndShootFromTrajectory(BackUpAndShootTraj.Right, "Back Up Right and Shoot"); }
+
+    /**
+     * Backs up along a Choreo path from the starting zone, then runs aim-and-shoot.
+     * Requires BackUpLeftTrajectory.traj / BackUpRightTrajectory.traj in deploy/choreo/ —
+     * see BackUpAndShootTraj.java for how to create them in Choreo.
+     */
+    private AutoRoutine backUpAndShootFromTrajectory(ChoreoTraj trajDef, String name) {
+        final AutoRoutine routine = autoFactory.newRoutine(name);
+        final AutoTrajectory backUpPath = trajDef.asAutoTraj(routine);
+        routine.active().onTrue(
+            Commands.sequence(
+                backUpPath.resetOdometry(),
+                backUpPath.cmd(),
+                subsystemCommands.aimAndShoot().withTimeout(5)
+            )
         );
         return routine;
     }
