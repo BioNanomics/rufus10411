@@ -31,9 +31,9 @@ public final class Constants {
         public static final LinearVelocity kLimitedSpeed = LinearVelocity.ofBaseUnits(4, MetersPerSecond);
         public static final AngularVelocity kMaxRotationalRate = RotationsPerSecond.of(1);
         /** Scales manual rotation stick input to make turning easier to control. */
-        public static final double kManualRotationScale = 0.7;
+        public static final double kManualRotationScale = 0.6;
         /** Scales manual translation stick input for gentler driving control. */
-        public static final double kManualTranslationScale = 0.7;
+        public static final double kManualTranslationScale = 0.6;
         public static final AngularVelocity kPIDRotationDeadband = kMaxRotationalRate.times(0.005);
     }
 

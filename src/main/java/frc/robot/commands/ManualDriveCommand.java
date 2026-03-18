@@ -76,10 +76,6 @@ public class ManualDriveCommand extends Command {
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
         .withHeadingPID(5, 0, 0);
 
-    private final SwerveRequest.RobotCentric robotCentricRequest = new SwerveRequest.RobotCentric()
-        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo);
-
     private State currentState = State.IDLING;
     private Optional<Rotation2d> lockedHeading = Optional.empty();
     private Stopwatch headingLockStopwatch = new Stopwatch();
@@ -184,24 +180,41 @@ public class ManualDriveCommand extends Command {
         final LinearVelocity ffVx = LinearVelocity.ofBaseUnits(forceResult.velocityOffset().getX(), MetersPerSecond);
         final LinearVelocity ffVy = LinearVelocity.ofBaseUnits(forceResult.velocityOffset().getY(), MetersPerSecond);
 
-        // Robot-centric mode: bypass heading-lock state machine entirely.
-        // Note: force field is disabled in robot-centric mode (forces are field-relative).
-        if (!isFieldCentric) {
-            if (!input.hasTranslation() && !input.hasRotation()) {
-                swerve.setControl(idleRequest);
-            } else {
-                swerve.setControl(
-                    robotCentricRequest
-                        .withVelocityX(Driving.kLimitedSpeed.times(input.forward))
-                        .withVelocityY(Driving.kLimitedSpeed.times(input.left))
-                        .withRotationalRate(Driving.kMaxRotationalRate.times(input.rotation))
-                );
-            }
-            previousInput = input;
-            return;
+        // "Field Centric" toggle controls how we interpret the *left stick translation*:
+        // - true: joystick translation is field-centric (current behavior)
+        // - false: joystick translation is robot-centric (front always front),
+        //          while ABXY heading-lock still works.
+        final LinearVelocity translationSpeed = isFieldCentric ? Driving.kMaxSpeed : Driving.kLimitedSpeed;
+
+        final LinearVelocity joystickVxRobot = translationSpeed.times(input.forward);
+        final LinearVelocity joystickVyRobot = translationSpeed.times(input.left);
+
+        final LinearVelocity joystickVxField;
+        final LinearVelocity joystickVyField;
+
+        if (isFieldCentric) {
+            // When field-centric is enabled, treat the joystick vector as already in field/operator coordinates.
+            joystickVxField = joystickVxRobot;
+            joystickVyField = joystickVyRobot;
+        } else {
+            // Convert robot-centric joystick vector into field/operator coordinates using current heading.
+            final Rotation2d headingInOperatorPerspective = swerve.getState().Pose.getRotation()
+                .rotateBy(swerve.getOperatorForwardDirection());
+
+            final double cos = headingInOperatorPerspective.getCos();
+            final double sin = headingInOperatorPerspective.getSin();
+
+            final double vxRobot = joystickVxRobot.in(MetersPerSecond);
+            final double vyRobot = joystickVyRobot.in(MetersPerSecond);
+
+            final double vxFieldBase = vxRobot * cos - vyRobot * sin;
+            final double vyFieldBase = vxRobot * sin + vyRobot * cos;
+
+            joystickVxField = LinearVelocity.ofBaseUnits(vxFieldBase, MetersPerSecond);
+            joystickVyField = LinearVelocity.ofBaseUnits(vyFieldBase, MetersPerSecond);
         }
 
-        // Field-centric mode: existing heading-lock state machine.
+        // Heading-lock state machine.
         // With force field, the robot should never truly idle — forces may be acting.
         final boolean hasForce = forceFieldEnabled && forceResult.velocityOffset().getNorm() > 0.01;
 
@@ -222,8 +235,8 @@ public class ManualDriveCommand extends Command {
                 lockHeadingIfRotationStopped(input);
                 swerve.setControl(
                     fieldCentricRequest
-                        .withVelocityX(Driving.kMaxSpeed.times(input.forward).plus(ffVx))
-                        .withVelocityY(Driving.kMaxSpeed.times(input.left).plus(ffVy))
+                        .withVelocityX(joystickVxField.plus(ffVx))
+                        .withVelocityY(joystickVyField.plus(ffVy))
                         .withRotationalRate(Driving.kMaxRotationalRate.times(input.rotation)
                             .plus(RadiansPerSecond.of(forceResult.angularVelocityOffset())))
                 );
@@ -231,8 +244,8 @@ public class ManualDriveCommand extends Command {
             case DRIVING_WITH_LOCKED_HEADING:
                 swerve.setControl(
                     fieldCentricFacingAngleRequest
-                        .withVelocityX(Driving.kMaxSpeed.times(input.forward).plus(ffVx))
-                        .withVelocityY(Driving.kMaxSpeed.times(input.left).plus(ffVy))
+                        .withVelocityX(joystickVxField.plus(ffVx))
+                        .withVelocityY(joystickVyField.plus(ffVy))
                         .withTargetDirection(lockedHeading.get())
                 );
                 break;
