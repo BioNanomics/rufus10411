@@ -27,7 +27,10 @@ import frc.robot.subsystems.Swerve;
  * Bound to: driver Start button (hold).
  */
 public class FuelChaseCommand extends Command {
-    /** Proportion of max rotational rate per unit of normalised horizontal offset (txnc ∈ [−1, 1]). */
+    /**
+     * Proportion of max rotational rate per unit of normalised horizontal offset
+     * (txnc ∈ [−1, 1]).
+     */
     private static final double kRotationKP = 0.7;
 
     /** Fraction of max drive speed to use while chasing a target. */
@@ -38,8 +41,8 @@ public class FuelChaseCommand extends Command {
     private final Intake intake;
 
     private final SwerveRequest.RobotCentric robotCentricRequest = new SwerveRequest.RobotCentric()
-        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo);
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
     public FuelChaseCommand(Swerve swerve, Limelight limelight, Intake intake) {
         this.swerve = swerve;
@@ -59,7 +62,8 @@ public class FuelChaseCommand extends Command {
         intake.set(Intake.Position.INTAKE);
         intake.set(Intake.Speed.INTAKE);
 
-        // Compute weighted-average horizontal offset across all visible fuel detections.
+        // Compute weighted-average horizontal offset across all visible fuel
+        // detections.
         // txnc is normalised (-1 = far left, +1 = far right). Weight by area (ta) so
         // closer or larger pieces pull the robot toward them more strongly.
         final RawDetection[] detections = LimelightHelpers.getRawDetections(limelight.getName());
@@ -74,13 +78,13 @@ public class FuelChaseCommand extends Command {
         }
         final double targetTxnc = hasTarget ? weightedTxncSum / weightSum : 0.0;
 
-        // Drive forward when a target is visible; rotate to centre it (sign: positive txnc → rotate right = negative in robot-centric)
+        // Drive forward when a target is visible; rotate to centre it (sign: positive
+        // txnc → rotate right = negative in robot-centric)
         swerve.setControl(
-            robotCentricRequest
-                .withVelocityX(Driving.kMaxSpeed.times(hasTarget ? kForwardSpeedFraction : 0.0))
-                .withVelocityY(Driving.kMaxSpeed.times(0.0))
-                .withRotationalRate(Driving.kMaxRotationalRate.times(-targetTxnc * kRotationKP))
-        );
+                robotCentricRequest
+                        .withVelocityX(Driving.kMaxSpeed.times(hasTarget ? kForwardSpeedFraction : 0.0))
+                        .withVelocityY(Driving.kMaxSpeed.times(0.0))
+                        .withRotationalRate(Driving.kMaxRotationalRate.times(-targetTxnc * kRotationKP)));
 
         Logger.recordOutput("FuelChase/DetectionCount", (double) detections.length);
         Logger.recordOutput("FuelChase/TargetTxnc", targetTxnc);

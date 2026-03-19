@@ -7,7 +7,6 @@ package frc.robot.commands;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$0;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$1;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$2;
-import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$3;
 import frc.robot.generated.BackUpAndShootTraj;
 import frc.robot.generated.ChoreoTraj;
 
@@ -38,14 +37,13 @@ public final class AutoRoutines {
     private final AutoChooser autoChooser;
 
     public AutoRoutines(
-        Swerve swerve,
-        Intake intake,
-        Floor floor,
-        Feeder feeder,
-        Shooter shooter,
-        Hood hood,
-        Limelight limelight
-    ) {
+            Swerve swerve,
+            Intake intake,
+            Floor floor,
+            Feeder feeder,
+            Shooter shooter,
+            Hood hood,
+            Limelight limelight) {
         this.intake = intake;
         this.shooter = shooter;
         this.hood = hood;
@@ -69,29 +67,32 @@ public final class AutoRoutines {
     private AutoRoutine shootOnlyRoutine() {
         final AutoRoutine routine = autoFactory.newRoutine("Shoot Only");
         routine.active().onTrue(
-            subsystemCommands.aimAndShoot().withTimeout(5)
-        );
+                subsystemCommands.aimAndShoot().withTimeout(5));
         return routine;
     }
 
-    private AutoRoutine backUpLeftAndShoot()  { return backUpAndShootFromTrajectory(BackUpAndShootTraj.Left,  "Back Up Left and Shoot"); }
-    private AutoRoutine backUpRightAndShoot() { return backUpAndShootFromTrajectory(BackUpAndShootTraj.Right, "Back Up Right and Shoot"); }
+    private AutoRoutine backUpLeftAndShoot() {
+        return backUpAndShootFromTrajectory(BackUpAndShootTraj.Left, "Back Up Left and Shoot");
+    }
+
+    private AutoRoutine backUpRightAndShoot() {
+        return backUpAndShootFromTrajectory(BackUpAndShootTraj.Right, "Back Up Right and Shoot");
+    }
 
     /**
      * Backs up along a Choreo path from the starting zone, then runs aim-and-shoot.
-     * Requires BackUpLeftTrajectory.traj / BackUpRightTrajectory.traj in deploy/choreo/ —
+     * Requires BackUpLeftTrajectory.traj / BackUpRightTrajectory.traj in
+     * deploy/choreo/ —
      * see BackUpAndShootTraj.java for how to create them in Choreo.
      */
     private AutoRoutine backUpAndShootFromTrajectory(ChoreoTraj trajDef, String name) {
         final AutoRoutine routine = autoFactory.newRoutine(name);
         final AutoTrajectory backUpPath = trajDef.asAutoTraj(routine);
         routine.active().onTrue(
-            Commands.sequence(
-                backUpPath.resetOdometry(),
-                backUpPath.cmd(),
-                subsystemCommands.aimAndShoot().withTimeout(5)
-            )
-        );
+                Commands.sequence(
+                        backUpPath.resetOdometry(),
+                        backUpPath.cmd(),
+                        subsystemCommands.aimAndShoot().withTimeout(5)));
         return routine;
     }
 
@@ -100,14 +101,11 @@ public final class AutoRoutines {
         final AutoTrajectory startToOutpost = OutpostAndDepotTrajectory$0.asAutoTraj(routine);
         final AutoTrajectory outpostToDepot = OutpostAndDepotTrajectory$1.asAutoTraj(routine);
         final AutoTrajectory depotToShootingPose = OutpostAndDepotTrajectory$2.asAutoTraj(routine);
-        final AutoTrajectory shootingPoseToTower = OutpostAndDepotTrajectory$3.asAutoTraj(routine);
 
         routine.active().onTrue(
-            Commands.sequence(
-                startToOutpost.resetOdometry(),
-                startToOutpost.cmd()
-            )
-        );
+                Commands.sequence(
+                        startToOutpost.resetOdometry(),
+                        startToOutpost.cmd()));
 
         // (climber disabled)
 
@@ -118,20 +116,12 @@ public final class AutoRoutines {
 
         depotToShootingPose.active().whileTrue(limelight.idle());
         depotToShootingPose.atTime(0.5).onTrue(
-            Commands.parallel(
-                shooter.spinUpCommand(2600),
-                hood.positionCommand(0.32)
-            )
-        );
+                Commands.parallel(
+                        shooter.spinUpCommand(2600),
+                        hood.positionCommand(0.32)));
+        // End the routine after shooting - no climb trajectory
         depotToShootingPose.done().onTrue(
-            Commands.sequence(
-                subsystemCommands.aimAndShoot()
-                    .withTimeout(5),
-                shootingPoseToTower.cmd()
-            )
-        );
-
-        shootingPoseToTower.active().whileTrue(limelight.idle());
+                subsystemCommands.aimAndShoot().withTimeout(5));
 
         return routine;
     }

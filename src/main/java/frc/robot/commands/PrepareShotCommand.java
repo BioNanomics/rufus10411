@@ -21,17 +21,13 @@ import frc.robot.subsystems.Shooter;
 
 public class PrepareShotCommand extends Command {
     private static final InterpolatingTreeMap<Distance, Shot> distanceToShotMap = new InterpolatingTreeMap<>(
-        (startValue, endValue, q) -> 
-            InverseInterpolator.forDouble()
-                .inverseInterpolate(startValue.in(Meters), endValue.in(Meters), q.in(Meters)),
-        (startValue, endValue, t) ->
-            new Shot(
-                Interpolator.forDouble()
-                    .interpolate(startValue.shooterRPM, endValue.shooterRPM, t),
-                Interpolator.forDouble()
-                    .interpolate(startValue.hoodPosition, endValue.hoodPosition, t)
-            )
-    );
+            (startValue, endValue, q) -> InverseInterpolator.forDouble()
+                    .inverseInterpolate(startValue.in(Meters), endValue.in(Meters), q.in(Meters)),
+            (startValue, endValue, t) -> new Shot(
+                    Interpolator.forDouble()
+                            .interpolate(startValue.shooterRPM, endValue.shooterRPM, t),
+                    Interpolator.forDouble()
+                            .interpolate(startValue.hoodPosition, endValue.hoodPosition, t)));
 
     static {
         distanceToShotMap.put(Inches.of(52.0), new Shot(3750, 0.19));
@@ -51,9 +47,12 @@ public class PrepareShotCommand extends Command {
     }
 
     public boolean isReadyToShoot() {
-        // isAboveFeedThreshold guards against false-ready when shooter hasn't started yet
-        // isVelocityWithinTolerance ensures we're within 100 RPM of the actual target (not just 3500)
-        return shooter.isAboveFeedThreshold() && shooter.isVelocityWithinTolerance() && hood.isPositionWithinTolerance();
+        // isAboveFeedThreshold guards against false-ready when shooter hasn't started
+        // yet
+        // isVelocityWithinTolerance ensures we're within 100 RPM of the actual target
+        // (not just 3500)
+        return shooter.isAboveFeedThreshold() && shooter.isVelocityWithinTolerance()
+                && hood.isPositionWithinTolerance();
     }
 
     private Distance getDistanceToHub() {

@@ -43,7 +43,8 @@ public class Robot extends LoggedRobot {
         // AdvantageKit logging: write to USB stick + publish to NetworkTables
         Logger.recordMetadata("ProjectName", "rufus10411");
         if (RobotBase.isReal()) {
-            Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/logs")); // Retrieve via SFTP: sftp lvuser@10.104.11.2:/home/lvuser/logs
+            Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/logs")); // Retrieve via SFTP: sftp
+                                                                           // lvuser@10.104.11.2:/home/lvuser/logs
         } else {
             Logger.addDataReceiver(new WPILOGWriter(Filesystem.getOperatingDirectory().getAbsolutePath() + "/logs"));
         }

@@ -64,17 +64,17 @@ public class ManualDriveCommand extends Command {
     private boolean forceFieldEnabled = false;
 
     private final SwerveRequest.FieldCentric fieldCentricRequest = new SwerveRequest.FieldCentric()
-        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+            .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
 
     private final SwerveRequest.FieldCentricFacingAngle fieldCentricFacingAngleRequest = new SwerveRequest.FieldCentricFacingAngle()
-        .withRotationalDeadband(Driving.kPIDRotationDeadband)
-        .withMaxAbsRotationalRate(Driving.kMaxRotationalRate)
-        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
-        .withHeadingPID(5, 0, 0);
+            .withRotationalDeadband(Driving.kPIDRotationDeadband)
+            .withMaxAbsRotationalRate(Driving.kMaxRotationalRate)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+            .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
+            .withHeadingPID(5, 0, 0);
 
     private State currentState = State.IDLING;
     private Optional<Rotation2d> lockedHeading = Optional.empty();
@@ -82,18 +82,18 @@ public class ManualDriveCommand extends Command {
     private ManualDriveInput previousInput = new ManualDriveInput();
 
     public ManualDriveCommand(
-        Swerve swerve,
-        DoubleSupplier forwardInput,
-        DoubleSupplier leftInput,
-        DoubleSupplier rotationInput,
-        ForceFieldEngine forceFieldEngine,
-        BooleanSupplier forceFieldToggle
-    ) {
+            Swerve swerve,
+            DoubleSupplier forwardInput,
+            DoubleSupplier leftInput,
+            DoubleSupplier rotationInput,
+            ForceFieldEngine forceFieldEngine,
+            BooleanSupplier forceFieldToggle) {
         this.swerve = swerve;
         this.inputSmoother = new DriveInputSmoother(forwardInput, leftInput, rotationInput);
         this.forceFieldEngine = forceFieldEngine;
         this.forceFieldToggle = forceFieldToggle;
-        // Publish the toggle so Elastic can display it as a Boolean Box / Toggle Button widget.
+        // Publish the toggle so Elastic can display it as a Boolean Box / Toggle Button
+        // widget.
         SmartDashboard.putBoolean(kFieldCentricKey, true);
         SmartDashboard.putBoolean(kForceFieldEnabledKey, false);
         this.fieldCentricEntry = SmartDashboard.getEntry(kFieldCentricKey);
@@ -112,7 +112,8 @@ public class ManualDriveCommand extends Command {
 
     private void setLockedHeadingToCurrent() {
         final Rotation2d headingInBlueAlliancePerspective = swerve.getState().Pose.getRotation();
-        final Rotation2d headingInOperatorPerspective = headingInBlueAlliancePerspective.rotateBy(swerve.getOperatorForwardDirection());
+        final Rotation2d headingInOperatorPerspective = headingInBlueAlliancePerspective
+                .rotateBy(swerve.getOperatorForwardDirection());
         setLockedHeading(headingInOperatorPerspective);
     }
 
@@ -155,13 +156,13 @@ public class ManualDriveCommand extends Command {
         Logger.recordOutput("ForceField/NetForceY", result.velocityOffset().getY());
         Logger.recordOutput("ForceField/NetTorque", result.angularVelocityOffset());
         Logger.recordOutput("ForceField/CornerForceFL",
-            new double[] { result.cornerForces()[0].getX(), result.cornerForces()[0].getY() });
+                new double[] { result.cornerForces()[0].getX(), result.cornerForces()[0].getY() });
         Logger.recordOutput("ForceField/CornerForceFR",
-            new double[] { result.cornerForces()[1].getX(), result.cornerForces()[1].getY() });
+                new double[] { result.cornerForces()[1].getX(), result.cornerForces()[1].getY() });
         Logger.recordOutput("ForceField/CornerForceBL",
-            new double[] { result.cornerForces()[2].getX(), result.cornerForces()[2].getY() });
+                new double[] { result.cornerForces()[2].getX(), result.cornerForces()[2].getY() });
         Logger.recordOutput("ForceField/CornerForceBR",
-            new double[] { result.cornerForces()[3].getX(), result.cornerForces()[3].getY() });
+                new double[] { result.cornerForces()[3].getX(), result.cornerForces()[3].getY() });
         return result;
     }
 
@@ -180,10 +181,11 @@ public class ManualDriveCommand extends Command {
         final LinearVelocity ffVx = LinearVelocity.ofBaseUnits(forceResult.velocityOffset().getX(), MetersPerSecond);
         final LinearVelocity ffVy = LinearVelocity.ofBaseUnits(forceResult.velocityOffset().getY(), MetersPerSecond);
 
-        // "Field Centric" toggle controls how we interpret the *left stick translation*:
+        // "Field Centric" toggle controls how we interpret the *left stick
+        // translation*:
         // - true: joystick translation is field-centric (current behavior)
         // - false: joystick translation is robot-centric (front always front),
-        //          while ABXY heading-lock still works.
+        // while ABXY heading-lock still works.
         final LinearVelocity translationSpeed = isFieldCentric ? Driving.kMaxSpeed : Driving.kLimitedSpeed;
 
         final LinearVelocity joystickVxRobot = translationSpeed.times(input.forward);
@@ -193,13 +195,15 @@ public class ManualDriveCommand extends Command {
         final LinearVelocity joystickVyField;
 
         if (isFieldCentric) {
-            // When field-centric is enabled, treat the joystick vector as already in field/operator coordinates.
+            // When field-centric is enabled, treat the joystick vector as already in
+            // field/operator coordinates.
             joystickVxField = joystickVxRobot;
             joystickVyField = joystickVyRobot;
         } else {
-            // Convert robot-centric joystick vector into field/operator coordinates using current heading.
+            // Convert robot-centric joystick vector into field/operator coordinates using
+            // current heading.
             final Rotation2d headingInOperatorPerspective = swerve.getState().Pose.getRotation()
-                .rotateBy(swerve.getOperatorForwardDirection());
+                    .rotateBy(swerve.getOperatorForwardDirection());
 
             final double cos = headingInOperatorPerspective.getCos();
             final double sin = headingInOperatorPerspective.getSin();
@@ -221,7 +225,8 @@ public class ManualDriveCommand extends Command {
         if (input.hasRotation()) {
             currentState = State.DRIVING_WITH_MANUAL_ROTATION;
         } else if (input.hasTranslation() || hasForce) {
-            currentState = lockedHeading.isPresent() ? State.DRIVING_WITH_LOCKED_HEADING : State.DRIVING_WITH_MANUAL_ROTATION;
+            currentState = lockedHeading.isPresent() ? State.DRIVING_WITH_LOCKED_HEADING
+                    : State.DRIVING_WITH_MANUAL_ROTATION;
         } else if (previousInput.hasRotation() || previousInput.hasTranslation()) {
             currentState = hasForce ? State.DRIVING_WITH_MANUAL_ROTATION : State.IDLING;
         }
@@ -234,20 +239,18 @@ public class ManualDriveCommand extends Command {
             case DRIVING_WITH_MANUAL_ROTATION:
                 lockHeadingIfRotationStopped(input);
                 swerve.setControl(
-                    fieldCentricRequest
-                        .withVelocityX(joystickVxField.plus(ffVx))
-                        .withVelocityY(joystickVyField.plus(ffVy))
-                        .withRotationalRate(Driving.kMaxRotationalRate.times(input.rotation)
-                            .plus(RadiansPerSecond.of(forceResult.angularVelocityOffset())))
-                );
+                        fieldCentricRequest
+                                .withVelocityX(joystickVxField.plus(ffVx))
+                                .withVelocityY(joystickVyField.plus(ffVy))
+                                .withRotationalRate(Driving.kMaxRotationalRate.times(input.rotation)
+                                        .plus(RadiansPerSecond.of(forceResult.angularVelocityOffset()))));
                 break;
             case DRIVING_WITH_LOCKED_HEADING:
                 swerve.setControl(
-                    fieldCentricFacingAngleRequest
-                        .withVelocityX(joystickVxField.plus(ffVx))
-                        .withVelocityY(joystickVyField.plus(ffVy))
-                        .withTargetDirection(lockedHeading.get())
-                );
+                        fieldCentricFacingAngleRequest
+                                .withVelocityX(joystickVxField.plus(ffVx))
+                                .withVelocityY(joystickVyField.plus(ffVy))
+                                .withTargetDirection(lockedHeading.get()));
                 break;
         }
     }

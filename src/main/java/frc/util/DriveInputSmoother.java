@@ -25,7 +25,7 @@ public class DriveInputSmoother {
         this(forwardInput, leftInput, () -> 0);
     }
 
-    public ManualDriveInput getSmoothedInput() { 
+    public ManualDriveInput getSmoothedInput() {
         final Vector<N2> rawTranslationInput = VecBuilder.fill(forwardInput.getAsDouble(), leftInput.getAsDouble());
         final Vector<N2> deadbandedTranslationInput = MathUtil.applyDeadband(rawTranslationInput, kJoystickDeadband);
         final Vector<N2> curvedTranslationInput = MathUtil.copyDirectionPow(deadbandedTranslationInput, kCurveExponent);
@@ -35,9 +35,8 @@ public class DriveInputSmoother {
         final double curvedRotationInput = MathUtil.copyDirectionPow(deadbandedRotationInput, kCurveExponent);
 
         return new ManualDriveInput(
-            curvedTranslationInput.get(0), 
-            curvedTranslationInput.get(1), 
-            curvedRotationInput
-        );
+                curvedTranslationInput.get(0),
+                curvedTranslationInput.get(1),
+                curvedRotationInput);
     }
 }
