@@ -7,7 +7,6 @@ package frc.robot.commands;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$0;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$1;
 import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$2;
-import static frc.robot.generated.ChoreoTraj.OutpostAndDepotTrajectory$3;
 import frc.robot.generated.BackUpAndShootTraj;
 import frc.robot.generated.ChoreoTraj;
 
@@ -106,14 +105,11 @@ public final class AutoRoutines {
         final AutoTrajectory startToOutpost = OutpostAndDepotTrajectory$0.asAutoTraj(routine);
         final AutoTrajectory outpostToDepot = OutpostAndDepotTrajectory$1.asAutoTraj(routine);
         final AutoTrajectory depotToShootingPose = OutpostAndDepotTrajectory$2.asAutoTraj(routine);
-        final AutoTrajectory shootingPose = OutpostAndDepotTrajectory$3.asAutoTraj(routine);
 
         routine.active().onTrue(
                 Commands.sequence(
                         startToOutpost.resetOdometry(),
                         startToOutpost.cmd()));
-
-        // (climber disabled)
 
         startToOutpost.doneDelayed(1).onTrue(outpostToDepot.cmd());
 
@@ -125,10 +121,9 @@ public final class AutoRoutines {
                 Commands.parallel(
                         shooter.spinUpCommand(2600),
                         hood.positionCommand(0.32)));
-        depotToShootingPose.done().onTrue(shootingPose.cmd());
 
-        // Stop at final shooting pose and shoot without re-aiming/turning.
-        shootingPose.done().onTrue(
+        // Shoot at waypoint 8 (end of depotToShootingPose)
+        depotToShootingPose.done().onTrue(
                 Commands.parallel(
                         shooter.spinUpCommand(3850.0).andThen(shooter.run(() -> shooter.setRPM(3850.0))),
                         hood.positionCommand(0.32),

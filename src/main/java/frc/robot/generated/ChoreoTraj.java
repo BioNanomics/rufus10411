@@ -24,19 +24,12 @@ public record ChoreoTraj(
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue
 ) {
-    public static final ChoreoTraj ShootAndClimbTrajectory_Right = new ChoreoTraj(
-        "ShootAndClimbTrajectory_Right",
-        OptionalInt.empty(),
-        1.91274,
-        new Pose2d(3.598, 0.64, Rotation2d.fromRadians(3.14159)),
-        new Pose2d(0.941, 3.564, Rotation2d.fromRadians(3.14159))
-    );
     public static final ChoreoTraj OutpostAndDepotTrajectory = new ChoreoTraj(
         "OutpostAndDepotTrajectory",
         OptionalInt.empty(),
-        10.30066,
+        7.84369,
         new Pose2d(3.59816, 0.63985, Rotation2d.fromRadians(3.14159)),
-        new Pose2d(2.64076, 3.75741, Rotation2d.fromRadians(0))
+        new Pose2d(2.62085, 4.01626, Rotation2d.fromRadians(0))
     );
     /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
     public static final ChoreoTraj OutpostAndDepotTrajectory$0 = new ChoreoTraj(
@@ -62,27 +55,12 @@ public record ChoreoTraj(
         new Pose2d(0.66833, 5.96377, Rotation2d.fromRadians(3.14159)),
         new Pose2d(2.62085, 4.01626, Rotation2d.fromRadians(0))
     );
-    /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
-    public static final ChoreoTraj OutpostAndDepotTrajectory$3 = new ChoreoTraj(
-        "OutpostAndDepotTrajectory",
-        OptionalInt.of(3),
-        2.456970000000001,
-        new Pose2d(2.62085, 4.01626, Rotation2d.fromRadians(0)),
-        new Pose2d(2.64076, 3.75741, Rotation2d.fromRadians(0))
-    );
-    public static final ChoreoTraj ShootAndClimbTrajectory_Center = new ChoreoTraj(
-        "ShootAndClimbTrajectory_Center",
+    public static final ChoreoTraj BackUpAndShootTrajectory = new ChoreoTraj(
+        "BackUpAndShootTrajectory",
         OptionalInt.empty(),
-        1.5803,
-        new Pose2d(3.598, 4.036, Rotation2d.fromRadians(3.14159)),
-        new Pose2d(0.941, 3.564, Rotation2d.fromRadians(3.14159))
-    );
-    public static final ChoreoTraj ShootAndClimbTrajectory_Left = new ChoreoTraj(
-        "ShootAndClimbTrajectory_Left",
-        OptionalInt.empty(),
-        2.08584,
-        new Pose2d(3.598, 7.432, Rotation2d.fromRadians(3.14159)),
-        new Pose2d(0.941, 3.564, Rotation2d.fromRadians(3.14159))
+        1.13847,
+        new Pose2d(3.598, 4, Rotation2d.fromRadians(0)),
+        new Pose2d(2.2, 4, Rotation2d.fromRadians(0))
     );
 
     /**
@@ -90,14 +68,11 @@ public record ChoreoTraj(
      * This allows for trajectory data to be looked up with strings during runtime.
      */
     public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
-        Map.entry("ShootAndClimbTrajectory_Right", ShootAndClimbTrajectory_Right),
         Map.entry("OutpostAndDepotTrajectory", OutpostAndDepotTrajectory),
         Map.entry("OutpostAndDepotTrajectory$0", OutpostAndDepotTrajectory$0),
         Map.entry("OutpostAndDepotTrajectory$1", OutpostAndDepotTrajectory$1),
         Map.entry("OutpostAndDepotTrajectory$2", OutpostAndDepotTrajectory$2),
-        Map.entry("OutpostAndDepotTrajectory$3", OutpostAndDepotTrajectory$3),
-        Map.entry("ShootAndClimbTrajectory_Center", ShootAndClimbTrajectory_Center),
-        Map.entry("ShootAndClimbTrajectory_Left", ShootAndClimbTrajectory_Left)
+        Map.entry("BackUpAndShootTrajectory", BackUpAndShootTrajectory)
     );
 
     /**
